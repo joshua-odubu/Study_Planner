@@ -1,0 +1,5 @@
+{
+  "routes": [
+    { "src": "/", "dest": "/Study_Planner.html" }
+  ]
+}

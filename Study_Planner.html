@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joshua's Study Planner</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="Study_Planner.css">
+
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="topbar-brand" type="button" onclick="showTab('home',null)" aria-label="Open home">
+      <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+      Study Planner
+    </button>
+    <span id="sync-badge" style="display:none" class="sync-badge"></span>
+  </div>
+  <button class="nav-tab" onclick="showTab('calendar',this)"><i class="fa-regular fa-calendar"></i> <span class="nav-label">Calendar</span></button>
+  <button class="nav-tab" onclick="showTab('todo',this)"><i class="fa-solid fa-list-check"></i> <span class="nav-label">Tasks</span></button>
+  <button class="nav-tab" onclick="showTab('pomodoro',this)"><i class="fa-solid fa-stopwatch"></i> <span class="nav-label">Pomodoro</span></button>
+  <button class="nav-tab" onclick="showTab('progress',this)"><i class="fa-solid fa-chart-line"></i> <span class="nav-label">Progress</span></button>
+  <button class="nav-tab icon-only" onclick="openSettings()" title="Sync Settings" aria-label="Open sync settings"><i class="fa-solid fa-gear"></i></button>
+</div>
+
+<!-- HOME -->
+<div id="tab-home" class="home-section active">
+  <div class="home-greeting">Good <span id="home-tod"></span>, Joshua</div>
+  <div class="home-date" id="home-date"></div>
+  <div class="quote-card">
+    <div class="quote-text" id="quote-text"></div>
+    <div class="quote-author" id="quote-author"></div>
+  </div>
+  <div class="home-stats">
+    <div class="home-stat"><div class="home-stat-val" id="h-due">0</div><div class="home-stat-lbl">Due Today</div></div>
+    <div class="home-stat"><div class="home-stat-val" id="h-streak">0</div><div class="home-stat-lbl">Day Streak</div></div>
+    <div class="home-stat"><div class="home-stat-val" id="h-pomo">0</div><div class="home-stat-lbl">Pomodoros</div></div>
+    <div class="home-stat"><div class="home-stat-val" id="h-done">0</div><div class="home-stat-lbl">Tasks Done</div></div>
+  </div>
+  <div class="home-actions">
+    <button class="home-action-btn" type="button" onclick="showTab('calendar',null)"><i class="fa-regular fa-calendar"></i><span>Calendar</span></button>
+    <button class="home-action-btn" type="button" onclick="showTab('todo',null)"><i class="fa-solid fa-list-check"></i><span>Tasks</span></button>
+    <button class="home-action-btn" type="button" onclick="showTab('pomodoro',null)"><i class="fa-solid fa-stopwatch"></i><span>Pomodoro</span></button>
+    <button class="home-action-btn" type="button" onclick="showTab('progress',null)"><i class="fa-solid fa-chart-line"></i><span>Progress</span></button>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div id="tab-calendar" class="section">
+  <div class="card">
+    <div class="cal-controls">
+      <div class="cal-nav">
+        <button class="btn btn-secondary btn-sm" onclick="calNav(-1)" aria-label="Previous calendar period"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="cal-title" id="cal-title"></span>
+        <button class="btn btn-secondary btn-sm" onclick="calNav(1)" aria-label="Next calendar period"><i class="fa-solid fa-chevron-right"></i></button>
+        <button class="btn btn-secondary btn-sm" onclick="calToday()">Today</button>
+      </div>
+      <div class="cal-view-btns">
+        <button class="cal-view-btn active" id="vbtn-month" onclick="setView('month')">Month</button>
+        <button class="cal-view-btn" id="vbtn-week" onclick="setView('week')">Week</button>
+        <button class="cal-view-btn" id="vbtn-day" onclick="setView('day')">Day</button>
+      </div>
+    </div>
+    <div id="cal-body"></div>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div id="tab-todo" class="section">
+  <div class="card">
+    <div class="card-title"><i class="fa-solid fa-plus"></i> Add Task</div>
+    <div class="add-task-form">
+      <input class="form-input" type="text" id="t-title" placeholder="What do you need to do?" onkeydown="if(event.key==='Enter')addTask()">
+      <div class="form-row">
+        <select class="form-select" id="t-cat">
+          <option value="study">Study</option>
+          <option value="work">Work</option>
+          <option value="personal">Personal</option>
+        </select>
+        <select class="form-select" id="t-pri">
+          <option value="high">High priority</option>
+          <option value="medium" selected>Medium priority</option>
+          <option value="low">Low priority</option>
+        </select>
+        <input class="form-select" type="date" id="t-due" style="flex:1">
+        <select class="form-select" id="t-repeat" aria-label="Task repeat">
+          <option value="none">No repeat</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+        <button class="btn btn-primary" onclick="addTask()"><i class="fa-solid fa-plus"></i> Add</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="task-tools">
+      <input class="form-input" type="search" id="task-search" placeholder="Search tasks" oninput="setTaskSearch(this.value)" aria-label="Search tasks">
+      <select class="form-select" id="task-sort" onchange="setTaskSort(this.value)" aria-label="Sort tasks">
+        <option value="due">Sort by due date</option>
+        <option value="priority">Sort by priority</option>
+        <option value="created">Sort by newest</option>
+        <option value="title">Sort by title</option>
+      </select>
+    </div>
+    <div class="filters">
+      <span class="filter-label">Filter:</span>
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('study',this)">Study</button>
+      <button class="filter-btn" onclick="setFilter('work',this)">Work</button>
+      <button class="filter-btn" onclick="setFilter('personal',this)">Personal</button>
+      <button class="filter-btn" onclick="setFilter('high',this)">High</button>
+      <button class="filter-btn" onclick="setFilter('medium',this)">Medium</button>
+      <button class="filter-btn" onclick="setFilter('low',this)">Low</button>
+    </div>
+    <div id="todo-active" class="todo-list"></div>
+    <div id="done-section" style="display:none">
+      <div class="sec-label">Completed <button class="btn btn-sm btn-secondary" style="margin-left:auto" onclick="clearDone()">Clear all</button></div>
+      <div id="todo-done" class="todo-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- POMODORO -->
+<div id="tab-pomodoro" class="section">
+  <div class="pomo-layout">
+    <div class="card pomo-card">
+      <div class="pomo-mode-btns">
+        <button class="pomo-mode-btn active" id="mb-work" onclick="setMode('work')">Focus</button>
+        <button class="pomo-mode-btn" id="mb-short" onclick="setMode('short')">Short Break</button>
+        <button class="pomo-mode-btn" id="mb-long" onclick="setMode('long')">Long Break</button>
+      </div>
+      <div class="pomo-ring-wrap">
+        <svg class="pomo-ring" width="184" height="184" viewBox="0 0 184 184">
+          <circle class="ring-bg" cx="92" cy="92" r="82"/>
+          <circle class="ring-fg" id="ring-fg" cx="92" cy="92" r="82" stroke-dasharray="515.22" stroke-dashoffset="0"/>
+        </svg>
+        <div class="pomo-time-text">
+          <div class="pomo-display" id="pomo-display">25:00</div>
+          <div class="pomo-sublabel" id="pomo-sublabel">Focus Time</div>
+        </div>
+      </div>
+      <div class="pomo-dots" id="pomo-dots"></div>
+      <div class="pomo-ctrls">
+        <button class="btn-start" id="btn-start" onclick="togglePomo()"><i class="fa-solid fa-play"></i> Start</button>
+        <button class="btn-reset" onclick="resetPomo()" aria-label="Reset Pomodoro timer"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <select class="pomo-sel" id="pomo-sel"><option value="">— Working on… —</option></select>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-chart-simple"></i> Today's Stats</div>
+        <div class="stat-row"><span class="stat-row-label">Sessions done</span><span class="stat-row-value" id="s-count">0</span></div>
+        <div class="stat-row"><span class="stat-row-label">Focus time</span><span class="stat-row-value" id="s-focus">0 min</span></div>
+        <div class="stat-row"><span class="stat-row-label">Cycle progress</span><span class="stat-row-value" id="s-cycle">0 / 4</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Session Log</div>
+        <div class="pomo-log" id="pomo-log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div id="tab-progress" class="section">
+  <div class="prog-stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Tasks Completed</div>
+      <div class="stat-value" id="prog-done">0</div>
+      <div class="stat-sub" id="prog-sub">of 0 total</div>
+      <div class="prog-bar-wrap" style="margin-top:10px"><div class="prog-bar overall" id="prog-bar-overall" style="width:0%"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Study Streak</div>
+      <div class="stat-value" id="streak-n">0</div>
+      <div class="stat-sub">days in a row 🔥</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pomodoros Today</div>
+      <div class="stat-value" id="p-today">0</div>
+      <div class="stat-sub" id="p-week-sub">0 this week</div>
+    </div>
+  </div>
+  <div class="cat-prog-row">
+    <div class="cat-prog-card">
+      <div class="cat-prog-name" style="color:var(--study)"><span>Study</span><span id="study-txt" style="color:var(--muted)">0/0</span></div>
+      <div class="cat-prog-count" style="color:var(--study)" id="study-pct">—</div>
+      <div class="prog-bar-wrap"><div class="prog-bar study" id="study-bar" style="width:0%"></div></div>
+    </div>
+    <div class="cat-prog-card">
+      <div class="cat-prog-name" style="color:var(--work)"><span>Work</span><span id="work-txt" style="color:var(--muted)">0/0</span></div>
+      <div class="cat-prog-count" style="color:var(--work)" id="work-pct">—</div>
+      <div class="prog-bar-wrap"><div class="prog-bar work" id="work-bar" style="width:0%"></div></div>
+    </div>
+    <div class="cat-prog-card">
+      <div class="cat-prog-name" style="color:var(--personal)"><span>Personal</span><span id="personal-txt" style="color:var(--muted)">0/0</span></div>
+      <div class="cat-prog-count" style="color:var(--personal)" id="personal-pct">—</div>
+      <div class="prog-bar-wrap"><div class="prog-bar personal" id="personal-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="fa-solid fa-circle-check"></i> Recently Completed</div>
+    <div id="recent-done" class="recent-list"></div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="cfg-modal" role="dialog" aria-modal="true" aria-labelledby="cfg-title">
+  <div class="modal">
+    <div class="modal-title" id="cfg-title"><i class="fa-solid fa-rotate" style="color:var(--accent)"></i> Database Sync (Firebase)</div>
+    <div class="mf">
+      <label for="cfg-url">Firebase Realtime Database URL</label>
+      <input type="url" id="cfg-url" placeholder="https://your-project-default-rtdb.firebaseio.com">
+    </div>
+    <div style="font-size:.75rem;color:var(--muted);line-height:1.7;margin-bottom:4px;background:var(--bg);border-radius:8px;padding:12px">
+      <strong style="color:var(--text2)">Setup:</strong> Use a Firebase Realtime Database URL. Test mode is fine for a trial, but lock your rules before storing real study data.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeCfg()">Cancel</button>
+      <button class="btn btn-secondary" onclick="requestNotifyPermission()"><i class="fa-regular fa-bell"></i> Notifications</button>
+      <button class="btn btn-secondary" onclick="exportBackup()"><i class="fa-solid fa-file-export"></i> Export</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('backup-file').click()"><i class="fa-solid fa-file-import"></i> Import</button>
+      <button class="btn btn-secondary" onclick="forcePull()"><i class="fa-solid fa-cloud-arrow-down"></i> Pull</button>
+      <button class="btn btn-secondary" onclick="forcePush()"><i class="fa-solid fa-cloud-arrow-up"></i> Push</button>
+      <button class="btn btn-primary" onclick="saveCfg()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+    </div>
+    <input class="visually-hidden" type="file" id="backup-file" accept="application/json,.json" onchange="importBackup(event)">
+  </div>
+</div>
+
+<!-- EVENT MODAL -->
+<div class="modal-overlay" id="ev-modal" role="dialog" aria-modal="true" aria-labelledby="ev-modal-title">
+  <div class="modal">
+    <div class="modal-title" id="ev-modal-title"><i class="fa-regular fa-calendar-plus" style="color:var(--accent)"></i> Add Event</div>
+    <input type="hidden" id="ev-id">
+    <div class="mf"><label for="ev-title">Title</label><input type="text" id="ev-title" placeholder="Event name"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="mf"><label for="ev-date">Date</label><input type="date" id="ev-date"></div>
+      <div class="mf"><label for="ev-time">Time</label><input type="time" id="ev-time" step="1800"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="mf">
+        <label for="ev-duration">Duration</label>
+        <select id="ev-duration">
+          <option value="30">30 minutes</option>
+          <option value="60" selected>1 hour</option>
+          <option value="90">1.5 hours</option>
+          <option value="120">2 hours</option>
+          <option value="180">3 hours</option>
+        </select>
+      </div>
+      <div class="mf">
+        <label for="ev-repeat">Repeat</label>
+        <select id="ev-repeat">
+          <option value="none">No repeat</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+    </div>
+    <div class="mf">
+      <label for="ev-cat">Category</label>
+      <select id="ev-cat">
+        <option value="study">Study</option>
+        <option value="work">Work</option>
+        <option value="personal">Personal</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="ev-delete" onclick="deleteEventFromModal()" style="display:none;margin-right:auto"><i class="fa-solid fa-trash-can"></i> Delete</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEvent()" id="ev-save-btn">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK EDIT MODAL -->
+<div class="modal-overlay" id="task-modal" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+  <div class="modal">
+    <div class="modal-title" id="task-modal-title"><i class="fa-solid fa-pen" style="color:var(--accent)"></i> Edit Task</div>
+    <input type="hidden" id="edit-task-id">
+    <div class="mf"><label for="edit-task-title">Title</label><input type="text" id="edit-task-title"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="mf">
+        <label for="edit-task-cat">Category</label>
+        <select id="edit-task-cat">
+          <option value="study">Study</option>
+          <option value="work">Work</option>
+          <option value="personal">Personal</option>
+        </select>
+      </div>
+      <div class="mf">
+        <label for="edit-task-pri">Priority</label>
+        <select id="edit-task-pri">
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="mf"><label for="edit-task-due">Due date</label><input type="date" id="edit-task-due"></div>
+      <div class="mf">
+        <label for="edit-task-repeat">Repeat</label>
+        <select id="edit-task-repeat">
+          <option value="none">No repeat</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="deleteTaskFromEdit()" style="margin-right:auto"><i class="fa-solid fa-trash-can"></i> Delete</button>
+      <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTaskEdit()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<script src="Study_Planner.js"></script>
+
+</body>
+</html>
